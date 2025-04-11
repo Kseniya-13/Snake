@@ -21,7 +21,8 @@
 
             do
             {
-                Thread.Sleep(500);
+                Thread.Sleep(1000 - _snake.Speed * 100);
+                Console.WriteLine(_snake.Speed);
                 HandleInput();
                 Update();
             } while (_isGameRunning);

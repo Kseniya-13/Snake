@@ -9,10 +9,13 @@ namespace Snake
         public TypeOfDerections Direction { get; set; }
         private const ConsoleColor headColor = ConsoleColor.DarkGreen;
         private const ConsoleColor bodyColor = ConsoleColor.Green;
+        public int Speed { get; set; }
 
         public Snake(TypeOfDerections direction, int x, int y)
         {
             Direction = direction;
+
+            Speed = 1;
 
             Point head = new Point(x, y);
 
@@ -37,6 +40,7 @@ namespace Snake
 
         public void Eat(int foodPrice)
         {
+            Speed++;
             Point head = GetNextPosition();
             Counter += foodPrice;
             Field.PrintCell(head, headColor);
