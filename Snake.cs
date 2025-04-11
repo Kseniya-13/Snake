@@ -1,35 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Snake.Program;
+﻿using static Snake.Program;
 
 namespace Snake
 {
     internal class Snake
     {
         public List<Point> Body { get; set; }
+        public int Counter { get; set; } = 0;
         public TypeOfDerections Direction { get; set; }
+        private const ConsoleColor headColor = ConsoleColor.DarkGreen;
+        private const ConsoleColor bodyColor = ConsoleColor.Green;
 
         public Snake(TypeOfDerections direction, int x, int y)
         {
             Direction = direction;
+
+            Point head = new Point(x, y);
+
             Body = new List<Point>
             {
-                new Point(x, y)
+                head
             };
+
+            Field.PrintCell(head, headColor);
         }
 
         public void Move()
         {
-            Body.Insert(0, GetNextPosition());
+            Point head = GetNextPosition();
+            Field.PrintCell(head, headColor);
+            Field.PrintCell(Body[0], bodyColor);
+            Field.ClearCell(Body[Body.Count - 1]);
 
+            Body.Insert(0, head);
             Body.RemoveAt(Body.Count - 1);
         }
 
-        public void Eat()
+        public void Eat(int foodPrice)
         {
+            Point head = GetNextPosition();
+            Counter += foodPrice;
+            Field.PrintCell(head, headColor);
+            Field.PrintCell(Body[0], bodyColor);
+
             Body.Insert(0, GetNextPosition());
         }
 
@@ -52,24 +64,6 @@ namespace Snake
                 default:
                     return new Point(Body[0].X, Body[0].Y);
             }
-        }
-
-        public bool CheckCollision()
-        {
-            if (Body[0].X < 0 || Body[0].Y < 0 || Body[0].X >= _fieldWidth || Body[0].Y >= _fieldHight)
-            {
-                return true;
-            }
-
-            for (int i = 1; i < Body.Count; i++)
-            {
-                if (_snake.Body[0].Equals(Body[0]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

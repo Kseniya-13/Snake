@@ -1,92 +1,34 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace Snake
+﻿namespace Snake
 {
     internal class Program
     {
-        public const int _fieldHight = 10;
-        public const int _fieldWidth = 10;
+        public static bool _isGameRunning = true;
+        public static Snake _snake { get; set; }
+        public static Food _food { get; set; }
 
-        public static int _ballCounter;
-        public static bool _isGameRunning = false;
-        public static Snake _snake = new Snake(TypeOfDerections.Right, _fieldWidth / 2, _fieldHight / 2);
-        public static Food _food = new Food(_fieldHight, _fieldWidth);
         static void Main(string[] args)
         {
+            Field.PrintBackGround();
+            _snake = new Snake(TypeOfDerections.Right, Field.Width / 2, Field.Height / 2);
+            _food = new Food();
+
             do
             {
-                _food.Create(_fieldWidth, _fieldHight);
-
+                _food.Create();
             } while (_food.Position.X == _snake.Body[0].X && _food.Position.Y == _snake.Body[0].Y);
 
+            _food.Print();
+
             do
             {
-                PrintField(_fieldHight, _fieldWidth);
-                Thread.Sleep(1000);
-
+                Thread.Sleep(500);
                 HandleInput();
-
-                _snake.Move();
                 Update();
-
-                if (!_isGameRunning)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Вы проиграли :(");
-                    Thread.Sleep(1000);
-                }
             } while (_isGameRunning);
-        }
-
-        private static void PrintField(int hight, int width)
-        {
-            Console.Clear();
-            Console.WriteLine($"Баллы: {_ballCounter}.");
-            for (int i = 0; i < _fieldWidth; i++)
-            {
-                Console.Write(" - ");
-            }
 
             Console.WriteLine();
-
-            for (int y = 0; y < hight; y++)
-            {
-                Console.Write("|");
-
-                for (int x = 0; x < width; x++)
-                {
-                    if (y == _snake.Body[0].Y && x == _snake.Body[0].X)
-                    {
-                        Console.BackgroundColor = ConsoleColor.DarkGreen;
-                    }
-                    else if (_snake.Body.Exists(p => p.X == x && p.Y == y))
-                    {
-                        Console.BackgroundColor = ConsoleColor.DarkGreen;
-                    }
-                    else if (_food.Position.X == x && _food.Position.Y == y)
-                    {
-                        Console.BackgroundColor = _food.Color;
-                    }
-                    else
-                    {
-                        Console.ResetColor();
-                    }
-
-                    Console.Write("  ");
-                    Console.ResetColor();
-                    Console.Write(" ");
-                }
-
-                Console.Write("|");
-
-                Console.ResetColor();
-                Console.WriteLine();
-            }
-
-            for (int i = 0; i < _fieldWidth; i++)
-            {
-                Console.Write(" - ");
-            }
+            Console.WriteLine("Вы проиграли :(");
+            Thread.Sleep(1000);
         }
 
         private static void HandleInput()
@@ -117,27 +59,47 @@ namespace Snake
         {
             Point nextPoint = _snake.GetNextPosition();
 
+            if (CheckCollision(nextPoint))
+            {
+                _isGameRunning = false;
+                return;
+            }
+
             if (nextPoint.Equals(_food.Position))
             {
-                _snake.Eat();
-                _ballCounter++;
+                _snake.Eat(_food.fruit.Price);
 
                 do
                 {
-                    _food = _food.Create(_fieldWidth, _fieldHight);
+                    _food.Create();
                 } while (_snake.Body.Contains(_food.Position));
+
+                _food.Print();
             }
             else
             {
                 _snake.Move();
             }
 
-            if (_snake.CheckCollision())
-            {
-                _isGameRunning = false;
-            }
+            string spaces = new string(' ', 50);
+            Console.WriteLine(spaces);
+            Console.WriteLine(spaces);
+            Console.ResetColor();
+            Console.CursorTop = Console.CursorTop - 2;
+
+            Console.WriteLine($"Количество баллов: {_snake.Counter}.");
+            Console.WriteLine($"Текущий фрукт: {_food.fruit.Name}.");
         }
 
+        public static bool CheckCollision(Point head)
+        {
+            if (head.X < 0 || head.X >= Field.Width || head.Y < 0 || head.Y >= Field.Height)
+            {
+                return true;
+            }
+
+            return _snake.Body.Contains(head);
+        }
 
         public enum TypeOfDerections
         {

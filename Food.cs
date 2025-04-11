@@ -1,49 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Snake
+﻿namespace Snake
 {
     internal class Food
     {
         public Point Position { get; set; } = new Point();
-        public ConsoleColor Color { get; set; }
-        public int Cost {  get; set; }
+        public Fruit fruit { get; set; }
 
-        Dictionary<int, ConsoleColor> ColorsDictionary = new Dictionary<int, ConsoleColor>()
+        Dictionary<int, Fruit> FruitDictionary = new Dictionary<int, Fruit>()
         {
-            {0, ConsoleColor.Red},
-            {1, ConsoleColor.Yellow},
-            {2, ConsoleColor.Blue},
-            {3, ConsoleColor.Magenta},
-            {4, ConsoleColor.Cyan},
-            {5, ConsoleColor.White},
-        }
+            {0, new Fruit(ConsoleColor.Red, 1, "Клубника")},
+            {1, new Fruit (ConsoleColor.Yellow, 2, "Банан")},
+            {2, new Fruit (ConsoleColor.Blue, 3, "Капуста")},
+            {3, new Fruit (ConsoleColor.Magenta, 4, "Баклажан")},
+            {4, new Fruit (ConsoleColor.Cyan, 5, "Виноград")},
+            {5, new Fruit (ConsoleColor.White, 6, "Кабачок")}
+        };
 
-        Dictionary<ConsoleColor, int> CostByColor = new Dictionary<ConsoleColor, int>()
-        {
-            {ConsoleColor.Red, 1},
-            {ConsoleColor.Yellow, 2},
-            {ConsoleColor.Blue, 3},
-            {ConsoleColor.Magenta, 4},
-            {ConsoleColor.Cyan, 5},
-            {ConsoleColor.White, 6}
-        }
-
-        public Food(int hight, int width)
+        public Food()
         {
             Position = new Point();
         }
 
-        public void Create(int width, int hight)
+        public void Create()
         {
             Random rnd = new Random();
-            Position.X = rnd.Next(width);
-            Position.Y = rnd.Next(hight);
-            Color = ColorsDictionary.GetValueOrDefault(rnd.Next(ColorsDictionary.Count), ConsoleColor.Red);
-            Cost = CostByColor.GetValueOrDefault(rnd.Next(CostByColor.Count), 1);
+            Position.X = rnd.Next(Field.Width);
+            Position.Y = rnd.Next(Field.Height);
+            fruit = FruitDictionary.GetValueOrDefault(rnd.Next(FruitDictionary.Count), new Fruit(ConsoleColor.Red, 1, "Клубника"));
+        }
+
+        public void Print()
+        {
+            Field.PrintCell(Position, fruit.Color);
         }
     }
 }
