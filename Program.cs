@@ -7,88 +7,79 @@ namespace Snake
         public const int _fieldHight = 10;
         public const int _fieldWidth = 10;
 
-        public static bool _isGameRunning = true;
-        public static TypeFieldPoints[,] _field = new TypeFieldPoints[_fieldHight - 1, _fieldWidth - 1];
+        public static bool _isGameRunning = false;
         public static Snake _snake = new Snake(TypeOfDerections.Right, _fieldWidth / 2, _fieldHight / 2);
+        public static Food _food = new Food(_fieldHight, _fieldWidth);
         static void Main(string[] args)
         {
-            _field[_snake.Body[0].X, _snake.Body[0].Y] = TypeFieldPoints.Snake;
-            _snake.Body.Add(_snake.Body[0]);
-
-            Food food = new Food(_fieldHight, _fieldWidth);
-            food.Create(_fieldWidth, _fieldHight);
-            
-            if(_snake.Body[0] != food.Position)
+            do
             {
-                _field[food.Position.X, food.Position.Y] = TypeFieldPoints.Food;
-            }
+                _food.Create(_fieldWidth, _fieldHight);
 
-            PrintField();
+            } while (_food.Position.X == _snake.Body[0].X && _food.Position.Y == _snake.Body[0].Y);
 
             do
             {
-                _field[_snake.Body[0].X, _snake.Body[0].Y] = TypeFieldPoints.Empty;
+                PrintField(_fieldHight, _fieldWidth);
+                Thread.Sleep(1000);
+
+                HandleInput();
+
                 _snake.Move();
-                _isGameRunning = CheckCollision();
-                if(!_isGameRunning)
+                Update();
+
+                if (!_isGameRunning)
                 {
                     Console.WriteLine();
                     Console.WriteLine("Вы проиграли :(");
                     Thread.Sleep(1000);
-                    Environment.Exit(0);
                 }
-
-                _field[_snake.Body[0].X, _snake.Body[0].Y] = TypeFieldPoints.Snake;
-
-                PrintField();
-                Thread.Sleep(1000);
             } while (_isGameRunning);
-        } 
+        }
 
-        public static void PrintField()
+        private static void PrintField(int hight, int width)
         {
             Console.Clear();
 
-            for (int i = 0; i < _fieldWidth; i ++)
+            for (int i = 0; i < _fieldWidth; i++)
             {
                 Console.Write(" - ");
             }
 
             Console.WriteLine();
 
-            for(int i = 0; i < _fieldHight; i++)
+            for (int y = 0; y < hight; y++)
             {
                 Console.Write("|");
-                for (int j = 0; j  < _fieldWidth; j++)
+
+                for (int x = 0; x < width; x++)
                 {
-                    switch(_field[j, i])
+                    if (y == _snake.Body[0].Y && x == _snake.Body[0].X)
                     {
-                        case TypeFieldPoints.Empty:
-                            Console.Write("  ");
-                            break;
-
-                        case TypeFieldPoints.Food:
-                            Console.Write(" ");
-                            Console.BackgroundColor = ConsoleColor.DarkRed;
-                            Console.Write(" ");
-                           
-                            break;
-
-                        case TypeFieldPoints.Snake:
-                            Console.Write(" ");
-                            Console.BackgroundColor = ConsoleColor.Green;
-                            Console.Write(" ");
-                            break;
-
-                        default:
-                            Environment.Exit(0);
-                            break;
+                        Console.BackgroundColor = ConsoleColor.DarkGreen;
+                    }
+                    else if (_snake.Body.Exists(p => p.X == x && p.Y == y))
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkGreen;
+                    }
+                    else if (_food.Position.X == x && _food.Position.Y == y)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkRed;
+                    }
+                    else
+                    {
+                        Console.ResetColor();
                     }
 
+                    Console.Write("  ");
                     Console.ResetColor();
                     Console.Write(" ");
                 }
-                Console.WriteLine("|");
+
+                Console.Write("|");
+
+                Console.ResetColor();
+                Console.WriteLine();
             }
 
             for (int i = 0; i < _fieldWidth; i++)
@@ -97,27 +88,54 @@ namespace Snake
             }
         }
 
-        public static bool CheckCollision()
+        private static void HandleInput()
         {
-            if (_snake.Body[0].X < 0 || _snake.Body[0].Y < 0 || _snake.Body[0].X >= _fieldWidth || _snake.Body[0].Y >= _fieldHight)
-            {
-                return false;
-            }
+            if (!Console.KeyAvailable) return;
 
-            if (_snake.Body[0] == _snake.Body.Last())
-            {
-                return false;
-            }
+            var key = Console.ReadKey().Key;
 
-            return true;
+            if (key == ConsoleKey.UpArrow && _snake.Direction != TypeOfDerections.Down)
+            {
+                _snake.Direction = TypeOfDerections.Up;
+            }
+            else if (key == ConsoleKey.DownArrow && _snake.Direction != TypeOfDerections.Up)
+            {
+                _snake.Direction = TypeOfDerections.Down;
+            }
+            else if (key == ConsoleKey.LeftArrow && _snake.Direction != TypeOfDerections.Right)
+            {
+                _snake.Direction = TypeOfDerections.Left;
+            }
+            else if (key == ConsoleKey.RightArrow && _snake.Direction != TypeOfDerections.Left)
+            {
+                _snake.Direction = TypeOfDerections.Right;
+            }
         }
 
-        public enum TypeFieldPoints
+        public static void Update()
         {
-            Empty = 0,
-            Food = 1,
-            Snake = 2
+            Point nextPoint = _snake.GetNextPosition();
+
+            if (nextPoint.Equals(_food.Position))
+            {
+                _snake.Eat();
+
+                do
+                {
+                    _food = new Food(_fieldWidth, _fieldHight);
+                } while (_snake.Body.Contains(_food.Position));
+            }
+            else
+            {
+                _snake.Move();
+            }
+
+            if (_snake.CheckCollision())
+            {
+                _isGameRunning = false;
+            }
         }
+
 
         public enum TypeOfDerections
         {
