@@ -7,6 +7,7 @@ namespace Snake
         public const int _fieldHight = 10;
         public const int _fieldWidth = 10;
 
+        public static int _ballCounter;
         public static bool _isGameRunning = false;
         public static Snake _snake = new Snake(TypeOfDerections.Right, _fieldWidth / 2, _fieldHight / 2);
         public static Food _food = new Food(_fieldHight, _fieldWidth);
@@ -40,7 +41,7 @@ namespace Snake
         private static void PrintField(int hight, int width)
         {
             Console.Clear();
-
+            Console.WriteLine($"Баллы: {_ballCounter}.");
             for (int i = 0; i < _fieldWidth; i++)
             {
                 Console.Write(" - ");
@@ -64,7 +65,7 @@ namespace Snake
                     }
                     else if (_food.Position.X == x && _food.Position.Y == y)
                     {
-                        Console.BackgroundColor = ConsoleColor.DarkRed;
+                        Console.BackgroundColor = _food.Color;
                     }
                     else
                     {
@@ -119,10 +120,11 @@ namespace Snake
             if (nextPoint.Equals(_food.Position))
             {
                 _snake.Eat();
+                _ballCounter++;
 
                 do
                 {
-                    _food = new Food(_fieldWidth, _fieldHight);
+                    _food = _food.Create(_fieldWidth, _fieldHight);
                 } while (_snake.Body.Contains(_food.Position));
             }
             else
